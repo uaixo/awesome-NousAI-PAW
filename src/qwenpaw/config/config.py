@@ -2609,7 +2609,9 @@ ChannelConfigUnion = Union[
     SlackConfig,
     WecomConfig,
     XiaoYiConfig,
+    YuanbaoConfig,
     WeChatConfig,
+    OneBotConfig,
 ]
 
 
