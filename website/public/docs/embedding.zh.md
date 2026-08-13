@@ -2,38 +2,38 @@
 
 Embedding 把文本、图片等输入映射为固定维度的数值向量。语义相近的内容在向量空间中距离更近，因此下游模块可以进行语义搜索、聚类、去重或相似度判断。
 
-QwenPaw 当前提供的是一套基于 AgentScope 的 **Embedding 模型配置与运行能力**，包括多后端适配、真实请求测试、严格维度校验、分批与重试参数映射，以及配置保存后的生命周期管理。当前直接接入方是 ReMeLight：它使用这套能力为记忆提供向量支持。
+NousAIPaw 当前提供的是一套基于 AgentScope 的 **Embedding 模型配置与运行能力**，包括多后端适配、真实请求测试、严格维度校验、分批与重试参数映射，以及配置保存后的生命周期管理。当前直接接入方是 ReMeLight：它使用这套能力为记忆提供向量支持。
 
 ---
 
 ## 能力与边界
 
-| 能力           | 说明                                                                   |
-| -------------- | ---------------------------------------------------------------------- |
-| 多后端适配     | 支持 `openai`、`dashscope`、`dashscope_multimodal`、`gemini`、`ollama` |
-| 统一模型接口   | 通过 AgentScope Credential 和 EmbeddingModel 屏蔽厂商 SDK 差异         |
-| 文本向量化     | 接受一批文本并按输入顺序返回固定维度向量                               |
-| 维度控制与校验 | 按后端规则发送维度参数，并校验实际返回维度是否与配置一致               |
-| 分批与重试     | QwenPaw 设置上游批量大小；AgentScope 再按厂商限制拆批并处理可重试错误  |
-| 保存前测试     | 使用未保存配置发送真实请求，返回实际维度、延迟和错误原因               |
-| 配置生命周期   | 支持满足条件时热更新；向量空间变化时使旧缓存和索引失效                 |
-| 本地缓存       | 让当前接入方缓存相同输入的向量，降低重复计算和 API 调用                |
+| 能力           | 说明                                                                    |
+| -------------- | ----------------------------------------------------------------------- |
+| 多后端适配     | 支持 `openai`、`dashscope`、`dashscope_multimodal`、`gemini`、`ollama`  |
+| 统一模型接口   | 通过 AgentScope Credential 和 EmbeddingModel 屏蔽厂商 SDK 差异          |
+| 文本向量化     | 接受一批文本并按输入顺序返回固定维度向量                                |
+| 维度控制与校验 | 按后端规则发送维度参数，并校验实际返回维度是否与配置一致                |
+| 分批与重试     | NousAIPaw 设置上游批量大小；AgentScope 再按厂商限制拆批并处理可重试错误 |
+| 保存前测试     | 使用未保存配置发送真实请求，返回实际维度、延迟和错误原因                |
+| 配置生命周期   | 支持满足条件时热更新；向量空间变化时使旧缓存和索引失效                  |
+| 本地缓存       | 让当前接入方缓存相同输入的向量，降低重复计算和 API 调用                 |
 
-QwenPaw 的 Embedding 能力基于 **AgentScope 2.x**。厂商 Credential、EmbeddingModel、请求组装、基础拆批和重试来自 AgentScope；QwenPaw 负责配置映射、启用判断、连通性与返回值测试、保存和热更新。
+NousAIPaw 的 Embedding 能力基于 **AgentScope 2.x**。厂商 Credential、EmbeddingModel、请求组装、基础拆批和重试来自 AgentScope；NousAIPaw 负责配置映射、启用判断、连通性与返回值测试、保存和热更新。
 
 ```mermaid
 graph LR
-    UI[QwenPaw 配置] --> Adapter[配置映射 / 测试 / 生命周期]
+    UI[NousAIPaw 配置] --> Adapter[配置映射 / 测试 / 生命周期]
     Adapter --> AS[AgentScope Credential + EmbeddingModel]
     AS --> Provider[Embedding 服务 API]
     Adapter --> Consumer[下游接入方：当前为 ReMeLight]
 ```
 
-AgentScope 的能力范围比 QwenPaw 当前开放的输入范围更广：
+AgentScope 的能力范围比 NousAIPaw 当前开放的输入范围更广：
 
 - `DashScopeEmbeddingModel` 能根据模型名处理文本或图片/视频 `DataBlock`；`GeminiEmbeddingModel` 也包含多模态模型路径。
-- QwenPaw 当前只把 ReMeLight 产生的文本交给模型，没有通用 Embedding API，也没有把图片、音频、视频或 PDF 传入模型。因此选择多模态类型或模型不会自动获得多模态文件解析能力。
-- QwenPaw 构造 AgentScope 模型时传入 `parameters=None`。AgentScope 调用层可能接受的 `task_type`、`text_type` 等扩展参数，目前没有对应的控制台或 `agent.json` 配置项。
+- NousAIPaw 当前只把 ReMeLight 产生的文本交给模型，没有通用 Embedding API，也没有把图片、音频、视频或 PDF 传入模型。因此选择多模态类型或模型不会自动获得多模态文件解析能力。
+- NousAIPaw 构造 AgentScope 模型时传入 `parameters=None`。AgentScope 调用层可能接受的 `task_type`、`text_type` 等扩展参数，目前没有对应的控制台或 `agent.json` 配置项。
 
 ---
 
@@ -62,11 +62,11 @@ graph LR
 3. 实际维度与 `dimensions` 完全一致。
 
 测试成功的模型对象会暂存，供之后服务指纹仍与测试值一致的保存复用。该指纹包含后端、API Key、规范化后的 Base URL、
-模型名称、维度和 `use_dimensions`。QwenPaw 会先持久化提交的运行配置，再尽可能复用已测试模型进行原位更新。
+模型名称、维度和 `use_dimensions`。NousAIPaw 会先持久化提交的运行配置，再尽可能复用已测试模型进行原位更新。
 如果未测试、测试后服务指纹发生变化，或需要新增、移除 Embedding 组件，则会重新创建内嵌 ReMe。每次成功保存后仍会调度
 正常的 Agent 自动重载。
 
-运行时更新采用事务式流程。如果原位更新和 ReMe 重建都失败，QwenPaw 会在不覆盖并发修改的前提下恢复本次提交的配置字段，
+运行时更新采用事务式流程。如果原位更新和 ReMe 重建都失败，NousAIPaw 会在不覆盖并发修改的前提下恢复本次提交的配置字段，
 尽可能恢复旧 runtime，并返回错误。显式重建索引期间不允许修改 Embedding。
 
 修改后端、规范化后的 Base URL、模型名称、维度或 `use_dimensions` 会改变向量空间指纹并设置
@@ -108,16 +108,16 @@ graph LR
 
 ### 后端类型与参数总表
 
-| QwenPaw 类型           | AgentScope Credential / Model                     | AgentScope 输入与模型路由                                                                                                                       | 认证和地址参数                                                                                                  | 维度如何传给服务                                                                                     | 启用条件与 QwenPaw 限制                                                    |
-| ---------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `openai`               | `OpenAICredential` / `OpenAIEmbeddingModel`       | 文本；支持 `text-embedding-3-small`、`text-embedding-3-large` 等 OpenAI 兼容模型                                                                | `api_key` 必填；`base_url` 可选并传给 `openai.AsyncClient`；AgentScope 还支持 `organization`，但 QwenPaw 未开放 | 请求总是传 `input`、`model`、`encoding_format="float"`；仅当 `use_dimensions=true` 时传 `dimensions` | `model_name`、`api_key` 非空；只有此类型在前端显示 `use_dimensions`        |
-| `dashscope`            | `DashScopeCredential` / `DashScopeEmbeddingModel` | `text-embedding-*` 走文本 API；`qwen3-vl-embedding`、`qwen2.5-vl-embedding`、`multimodal-embedding-*`、`tongyi-embedding-vision-*` 走多模态 API | `api_key` 必填；Credential 接收 `base_url`，但当前模型调用未使用它                                              | 文本 API 始终传 `dimension`；多模态 API 不传维度，QwenPaw 仍校验返回维度                             | `model_name`、`api_key` 非空；QwenPaw 当前只输入文本                       |
-| `dashscope_multimodal` | 与 `dashscope` 完全相同                           | 这是 QwenPaw/ReMe 配置类型；AgentScope 仍由 `model_name` 决定文本或多模态路由                                                                   | 与 `dashscope` 相同                                                                                             | 与 `dashscope` 相同                                                                                  | `model_name`、`api_key` 非空；不会让 QwenPaw 自动读取图片或视频            |
-| `gemini`               | `GeminiCredential` / `GeminiEmbeddingModel`       | `gemini-embedding-001` 为文本路径；`gemini-embedding-2*` 为多模态路径                                                                           | 仅 `api_key`；AgentScope Credential 和 QwenPaw 都不提供 Base URL                                                | 文本和多模态路径都以 `output_dimensionality` 传入 `dimensions`                                       | `model_name`、`api_key` 非空；QwenPaw 当前只输入文本，且未开放 `task_type` |
-| `ollama`               | `OllamaCredential` / `OllamaEmbeddingModel`       | 文本；例如 `nomic-embed-text`、`mxbai-embed-large`                                                                                              | 不需要 API Key；`base_url` 映射为 `host`，留空使用 Ollama 默认 Host                                             | 始终传 `dimensions`                                                                                  | `model_name` 非空；QwenPaw 进程必须能访问 Ollama Host                      |
+| NousAIPaw 类型         | AgentScope Credential / Model                     | AgentScope 输入与模型路由                                                                                                                       | 认证和地址参数                                                                                                    | 维度如何传给服务                                                                                     | 启用条件与 NousAIPaw 限制                                                    |
+| ---------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `openai`               | `OpenAICredential` / `OpenAIEmbeddingModel`       | 文本；支持 `text-embedding-3-small`、`text-embedding-3-large` 等 OpenAI 兼容模型                                                                | `api_key` 必填；`base_url` 可选并传给 `openai.AsyncClient`；AgentScope 还支持 `organization`，但 NousAIPaw 未开放 | 请求总是传 `input`、`model`、`encoding_format="float"`；仅当 `use_dimensions=true` 时传 `dimensions` | `model_name`、`api_key` 非空；只有此类型在前端显示 `use_dimensions`          |
+| `dashscope`            | `DashScopeCredential` / `DashScopeEmbeddingModel` | `text-embedding-*` 走文本 API；`qwen3-vl-embedding`、`qwen2.5-vl-embedding`、`multimodal-embedding-*`、`tongyi-embedding-vision-*` 走多模态 API | `api_key` 必填；Credential 接收 `base_url`，但当前模型调用未使用它                                                | 文本 API 始终传 `dimension`；多模态 API 不传维度，NousAIPaw 仍校验返回维度                           | `model_name`、`api_key` 非空；NousAIPaw 当前只输入文本                       |
+| `dashscope_multimodal` | 与 `dashscope` 完全相同                           | 这是 NousAIPaw/ReMe 配置类型；AgentScope 仍由 `model_name` 决定文本或多模态路由                                                                 | 与 `dashscope` 相同                                                                                               | 与 `dashscope` 相同                                                                                  | `model_name`、`api_key` 非空；不会让 NousAIPaw 自动读取图片或视频            |
+| `gemini`               | `GeminiCredential` / `GeminiEmbeddingModel`       | `gemini-embedding-001` 为文本路径；`gemini-embedding-2*` 为多模态路径                                                                           | 仅 `api_key`；AgentScope Credential 和 NousAIPaw 都不提供 Base URL                                                | 文本和多模态路径都以 `output_dimensionality` 传入 `dimensions`                                       | `model_name`、`api_key` 非空；NousAIPaw 当前只输入文本，且未开放 `task_type` |
+| `ollama`               | `OllamaCredential` / `OllamaEmbeddingModel`       | 文本；例如 `nomic-embed-text`、`mxbai-embed-large`                                                                                              | 不需要 API Key；`base_url` 映射为 `host`，留空使用 Ollama 默认 Host                                               | 始终传 `dimensions`                                                                                  | `model_name` 非空；NousAIPaw 进程必须能访问 Ollama Host                      |
 
-QwenPaw 还向所有 AgentScope 模型传入 `context_size=max_input_length`、正常运行时 `max_retries=3`；
-“测试 Embedding 服务”会把重试次数降为 `1`，并在 QwenPaw 外层增加 15 秒超时。
+NousAIPaw 还向所有 AgentScope 模型传入 `context_size=max_input_length`、正常运行时 `max_retries=3`；
+“测试 Embedding 服务”会把重试次数降为 `1`，并在 NousAIPaw 外层增加 15 秒超时。
 
 `max_batch_size` 是 ReMeLight `embedding_store` 的上游分批大小。AgentScope 模型内部仍有自己的批量上限：
 当前源码中 OpenAI 为 2048、DashScope 文本为 10、Gemini 文本为 100、Ollama 为 512；超出时 AgentScope
@@ -185,7 +185,7 @@ vLLM 部署不接受该参数，此时应关闭开关并填写实际维度。
 
 ### 更换模型后必须重建向量
 
-不同模型即使输出维度相同，也不是同一个向量空间，旧向量不能与新查询向量混用。QwenPaw 会根据后端、规范化后的地址、
+不同模型即使输出维度相同，也不是同一个向量空间，旧向量不能与新查询向量混用。NousAIPaw 会根据后端、规范化后的地址、
 模型、维度和 `use_dimensions` 判断向量空间是否变化，标记需要重建，并在原位更新时删除旧 `.npz` 缓存。
 索引重建是显式操作，不会自动执行：看到 Console 警告后应先选择“重建记忆索引”，再依赖向量结果。
 不要保留或手工复制旧缓存来规避重建。
@@ -207,7 +207,7 @@ vLLM 部署不接受该参数，此时应关闭开关并填写实际维度。
 - Ollama 把同一字段解释为 `host`，例如 `http://localhost:11434`。
 - “OpenAI 兼容接口”应选择其真正兼容的 SDK 类型；SDK 类型决定请求格式和凭证对象，不只是界面标签。
 
-如果 QwenPaw 运行在容器中，Ollama 的 `localhost` 指向容器自身，通常不是宿主机。应填写从 QwenPaw 进程所在网络可达的地址。
+如果 NousAIPaw 运行在容器中，Ollama 的 `localhost` 指向容器自身，通常不是宿主机。应填写从 NousAIPaw 进程所在网络可达的地址。
 
 ### 输入长度是字符预算，不是 token 上限
 
@@ -230,7 +230,7 @@ vLLM 部署不接受该参数，此时应关闭开关并填写实际维度。
 
 ---
 
-## 在 QwenPaw 中的当前接入
+## 在 NousAIPaw 中的当前接入
 
 当前只有 ReMeLight 直接消费这套 Embedding 配置。它把 `memory/`、`digest/` 中的 Markdown 文本向量化，
 为 `memory_search` 和 digest 节点相似度查询补充语义信号；精确关键词仍由 BM25 负责。
@@ -257,7 +257,7 @@ ReMeLight 的检索结果间接受益。选择 ADBPG 等其他记忆后端时，
 - `vector`：原始余弦相似度；数值表示向量分支命中，`-` 表示未命中。
 - `keyword`：原始 BM25 分数；数值表示关键词分支命中，`-` 表示未命中。
 
-如果测试失败，依次检查：启用条件是否满足、QwenPaw 进程能否访问服务、模型名称是否存在、维度是否准确、
+如果测试失败，依次检查：启用条件是否满足、NousAIPaw 进程能否访问服务、模型名称是否存在、维度是否准确、
 服务是否接受 `dimensions` 参数、输入与批量限制是否过大，以及 API 配额或速率限制。
 
 ---

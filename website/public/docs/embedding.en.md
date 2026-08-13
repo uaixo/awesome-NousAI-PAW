@@ -2,38 +2,38 @@
 
 Embeddings map text, images, or other inputs to fixed-dimensional numeric vectors. Semantically similar content is closer in vector space, allowing downstream modules to perform semantic search, clustering, deduplication, and similarity checks.
 
-QwenPaw currently provides an **embedding model configuration and runtime layer** based on AgentScope. It covers multiple provider adapters, real-request testing, strict dimension validation, batching and retry mapping, and configuration lifecycle management. ReMeLight is the current direct consumer and uses this layer to add vector support to memory.
+NousAIPaw currently provides an **embedding model configuration and runtime layer** based on AgentScope. It covers multiple provider adapters, real-request testing, strict dimension validation, batching and retry mapping, and configuration lifecycle management. ReMeLight is the current direct consumer and uses this layer to add vector support to memory.
 
 ---
 
 ## Capabilities and Boundaries
 
-| Capability                       | Description                                                                                                    |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Multiple providers               | Supports `openai`, `dashscope`, `dashscope_multimodal`, `gemini`, and `ollama`                                 |
-| Unified model interface          | Uses AgentScope Credential and EmbeddingModel classes to hide provider SDK differences                         |
-| Text embedding                   | Accepts batches of text and returns fixed-dimensional vectors in input order                                   |
-| Dimension control and validation | Sends dimension settings according to provider rules and validates the actual output size                      |
-| Batching and retries             | QwenPaw sets an upstream batch size; AgentScope splits again for provider limits and retries eligible failures |
-| Pre-save test                    | Sends a real request with unsaved settings and reports actual dimensions, latency, and errors                  |
-| Configuration lifecycle          | Supports hot updates when possible and invalidates stale cache/index state after vector-space changes          |
-| Local cache                      | Lets the current consumer cache identical inputs to reduce repeated computation and API calls                  |
+| Capability                       | Description                                                                                                      |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Multiple providers               | Supports `openai`, `dashscope`, `dashscope_multimodal`, `gemini`, and `ollama`                                   |
+| Unified model interface          | Uses AgentScope Credential and EmbeddingModel classes to hide provider SDK differences                           |
+| Text embedding                   | Accepts batches of text and returns fixed-dimensional vectors in input order                                     |
+| Dimension control and validation | Sends dimension settings according to provider rules and validates the actual output size                        |
+| Batching and retries             | NousAIPaw sets an upstream batch size; AgentScope splits again for provider limits and retries eligible failures |
+| Pre-save test                    | Sends a real request with unsaved settings and reports actual dimensions, latency, and errors                    |
+| Configuration lifecycle          | Supports hot updates when possible and invalidates stale cache/index state after vector-space changes            |
+| Local cache                      | Lets the current consumer cache identical inputs to reduce repeated computation and API calls                    |
 
-QwenPaw's embedding capability is based on **AgentScope 2.x**. AgentScope supplies provider credentials, embedding models, request assembly, base batching, and retries. QwenPaw supplies configuration mapping, enablement rules, connectivity and response validation, saving, and hot updates.
+NousAIPaw's embedding capability is based on **AgentScope 2.x**. AgentScope supplies provider credentials, embedding models, request assembly, base batching, and retries. NousAIPaw supplies configuration mapping, enablement rules, connectivity and response validation, saving, and hot updates.
 
 ```mermaid
 graph LR
-    UI[QwenPaw configuration] --> Adapter[Mapping / test / lifecycle]
+    UI[NousAIPaw configuration] --> Adapter[Mapping / test / lifecycle]
     Adapter --> AS[AgentScope Credential + EmbeddingModel]
     AS --> Provider[Embedding service API]
     Adapter --> Consumer[Downstream consumer: currently ReMeLight]
 ```
 
-AgentScope supports more input types than QwenPaw currently exposes:
+AgentScope supports more input types than NousAIPaw currently exposes:
 
 - `DashScopeEmbeddingModel` routes text and image/video `DataBlock` inputs based on the model name. `GeminiEmbeddingModel` also includes a multimodal path.
-- QwenPaw currently sends only text produced by ReMeLight. It does not expose a general embedding API or pass images, audio, video, or PDFs to these models. Selecting a multimodal type or model therefore does not add multimodal file parsing.
-- QwenPaw constructs AgentScope models with `parameters=None`. Extra call-level options that AgentScope may accept, such as `task_type` or `text_type`, have no Console or `agent.json` field in the current integration.
+- NousAIPaw currently sends only text produced by ReMeLight. It does not expose a general embedding API or pass images, audio, video, or PDFs to these models. Selecting a multimodal type or model therefore does not add multimodal file parsing.
+- NousAIPaw constructs AgentScope models with `parameters=None`. Extra call-level options that AgentScope may accept, such as `task_type` or `text_type`, have no Console or `agent.json` field in the current integration.
 
 ---
 
@@ -64,11 +64,11 @@ service to:
 
 On success, the model object is staged for a subsequent save whose service fingerprint still matches the tested values.
 That fingerprint contains the backend, API key, normalized Base URL, model name, dimensions, and `use_dimensions`.
-QwenPaw first persists the submitted running config, then reuses the staged model for an in-place update when possible.
+NousAIPaw first persists the submitted running config, then reuses the staged model for an in-place update when possible.
 If the model was not tested, the fingerprint changed after testing, or Embedding components must be added or removed,
-QwenPaw recreates the embedded ReMe application. The normal Agent reload is also scheduled after every successful save.
+NousAIPaw recreates the embedded ReMe application. The normal Agent reload is also scheduled after every successful save.
 
-The runtime update is transactional. If both in-place update and ReMe recreation fail, QwenPaw restores the submitted
+The runtime update is transactional. If both in-place update and ReMe recreation fail, NousAIPaw restores the submitted
 configuration fields when that can be done without overwriting a concurrent edit, restores the previous runtime when
 possible, and returns an error. Embedding changes are rejected while an explicit index rebuild is running.
 
@@ -116,16 +116,16 @@ This status covers one real request with the current service parameters. The con
 
 ### Backend Types and Parameters
 
-| QwenPaw type           | AgentScope Credential / Model                     | AgentScope input and model routing                                                                                                                                   | Authentication and endpoint                                                                                                                    | How dimensions are sent                                                                                                     | Enable condition and QwenPaw limit                                                                         |
-| ---------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `openai`               | `OpenAICredential` / `OpenAIEmbeddingModel`       | Text; supports `text-embedding-3-small`, `text-embedding-3-large`, and other OpenAI-compatible models                                                                | Required `api_key`; optional `base_url` passed to `openai.AsyncClient`; AgentScope also supports `organization`, which QwenPaw does not expose | Always sends `input`, `model`, and `encoding_format="float"`; sends `dimensions` only when `use_dimensions=true`            | Non-empty `model_name` and `api_key`; the only type that shows `use_dimensions` in the UI                  |
-| `dashscope`            | `DashScopeCredential` / `DashScopeEmbeddingModel` | `text-embedding-*` uses the text API; `qwen3-vl-embedding`, `qwen2.5-vl-embedding`, `multimodal-embedding-*`, and `tongyi-embedding-vision-*` use the multimodal API | Required `api_key`; the credential accepts `base_url`, but the current model calls do not use it                                               | Text API always sends `dimension`; multimodal API does not send dimensions, while QwenPaw still validates the response size | Non-empty `model_name` and `api_key`; QwenPaw currently supplies text only                                 |
-| `dashscope_multimodal` | Exactly the same as `dashscope`                   | A QwenPaw/ReMe configuration type; AgentScope still selects text or multimodal routing from `model_name`                                                             | Same as `dashscope`                                                                                                                            | Same as `dashscope`                                                                                                         | Non-empty `model_name` and `api_key`; does not make QwenPaw read images or videos automatically            |
-| `gemini`               | `GeminiCredential` / `GeminiEmbeddingModel`       | `gemini-embedding-001` uses the text path; `gemini-embedding-2*` uses the multimodal path                                                                            | `api_key` only; neither the AgentScope credential nor QwenPaw exposes Base URL                                                                 | Both paths send `dimensions` as `output_dimensionality`                                                                     | Non-empty `model_name` and `api_key`; QwenPaw currently supplies text only and does not expose `task_type` |
-| `ollama`               | `OllamaCredential` / `OllamaEmbeddingModel`       | Text; examples include `nomic-embed-text` and `mxbai-embed-large`                                                                                                    | No API key; maps `base_url` to `host`, with blank selecting Ollama's default host                                                              | Always sends `dimensions`                                                                                                   | Non-empty `model_name`; the QwenPaw process must be able to reach the Ollama host                          |
+| NousAIPaw type         | AgentScope Credential / Model                     | AgentScope input and model routing                                                                                                                                   | Authentication and endpoint                                                                                                                      | How dimensions are sent                                                                                                       | Enable condition and NousAIPaw limit                                                                         |
+| ---------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `openai`               | `OpenAICredential` / `OpenAIEmbeddingModel`       | Text; supports `text-embedding-3-small`, `text-embedding-3-large`, and other OpenAI-compatible models                                                                | Required `api_key`; optional `base_url` passed to `openai.AsyncClient`; AgentScope also supports `organization`, which NousAIPaw does not expose | Always sends `input`, `model`, and `encoding_format="float"`; sends `dimensions` only when `use_dimensions=true`              | Non-empty `model_name` and `api_key`; the only type that shows `use_dimensions` in the UI                    |
+| `dashscope`            | `DashScopeCredential` / `DashScopeEmbeddingModel` | `text-embedding-*` uses the text API; `qwen3-vl-embedding`, `qwen2.5-vl-embedding`, `multimodal-embedding-*`, and `tongyi-embedding-vision-*` use the multimodal API | Required `api_key`; the credential accepts `base_url`, but the current model calls do not use it                                                 | Text API always sends `dimension`; multimodal API does not send dimensions, while NousAIPaw still validates the response size | Non-empty `model_name` and `api_key`; NousAIPaw currently supplies text only                                 |
+| `dashscope_multimodal` | Exactly the same as `dashscope`                   | A NousAIPaw/ReMe configuration type; AgentScope still selects text or multimodal routing from `model_name`                                                           | Same as `dashscope`                                                                                                                              | Same as `dashscope`                                                                                                           | Non-empty `model_name` and `api_key`; does not make NousAIPaw read images or videos automatically            |
+| `gemini`               | `GeminiCredential` / `GeminiEmbeddingModel`       | `gemini-embedding-001` uses the text path; `gemini-embedding-2*` uses the multimodal path                                                                            | `api_key` only; neither the AgentScope credential nor NousAIPaw exposes Base URL                                                                 | Both paths send `dimensions` as `output_dimensionality`                                                                       | Non-empty `model_name` and `api_key`; NousAIPaw currently supplies text only and does not expose `task_type` |
+| `ollama`               | `OllamaCredential` / `OllamaEmbeddingModel`       | Text; examples include `nomic-embed-text` and `mxbai-embed-large`                                                                                                    | No API key; maps `base_url` to `host`, with blank selecting Ollama's default host                                                                | Always sends `dimensions`                                                                                                     | Non-empty `model_name`; the NousAIPaw process must be able to reach the Ollama host                          |
 
-For every AgentScope model, QwenPaw also sets `context_size=max_input_length` and uses `max_retries=3` during normal
-operation. **Test Embedding Service** lowers retries to `1` and adds a 15-second QwenPaw-level timeout.
+For every AgentScope model, NousAIPaw also sets `context_size=max_input_length` and uses `max_retries=3` during normal
+operation. **Test Embedding Service** lowers retries to `1` and adds a 15-second NousAIPaw-level timeout.
 
 `max_batch_size` is the upstream batch size used by ReMeLight's `embedding_store`. AgentScope retains its own internal
 limits: in the pinned source these are 2048 for OpenAI, 10 for DashScope text, 100 for Gemini text, and 512 for Ollama.
@@ -196,7 +196,7 @@ OpenAI-compatible services and vLLM deployments reject the parameter; turn it of
 
 ### A Model Change Requires New Vectors
 
-Two models with the same output size can still use incompatible vector spaces. QwenPaw treats backend, normalized
+Two models with the same output size can still use incompatible vector spaces. NousAIPaw treats backend, normalized
 endpoint, model, dimensions, and `use_dimensions` as vector-space identity. It marks the configuration as requiring a
 rebuild and, for an in-place update, removes the old `.npz` cache. The index rebuild is explicit rather than automatic:
 follow the Console warning and select **Rebuild Memory Index** before relying on vector results. Do not retain or
@@ -206,7 +206,7 @@ Before starting, the Console confirms that rebuilding can temporarily increase C
 
 ![Confirmation shown before rebuilding the memory index](https://img.alicdn.com/imgextra/i3/O1CN01BCTjXC0jfMG1GYA0_!!6000000005728-0-tps-624-276.jpg)
 
-After confirmation, QwenPaw regenerates the derived index from the existing Markdown. Until it finishes, old vectors should not be treated as valid results from the new model.
+After confirmation, NousAIPaw regenerates the derived index from the existing Markdown. Until it finishes, old vectors should not be treated as valid results from the new model.
 
 ### Base URL, Host, and SDK Type Are Different Concepts
 
@@ -219,8 +219,8 @@ After confirmation, QwenPaw regenerates the derived index from the existing Mark
 - Ollama interprets the same field as `host`, for example `http://localhost:11434`.
 - The SDK type determines request format and credential class, not just the label shown in the UI.
 
-When QwenPaw runs in a container, Ollama at `localhost` refers to that container rather than the host machine. Use an
-address reachable from the QwenPaw process.
+When NousAIPaw runs in a container, Ollama at `localhost` refers to that container rather than the host machine. Use an
+address reachable from the NousAIPaw process.
 
 ### Input Length Is a Character Budget, Not a Token Limit
 
@@ -243,12 +243,12 @@ little keyword overlap and confirm that the raw result contains a numeric `vecto
 
 ### Running Without Embeddings Is Valid
 
-When the model name or required credentials are missing, QwenPaw disables vector components and BM25 continues to work.
+When the model name or required credentials are missing, NousAIPaw disables vector components and BM25 continues to work.
 Paraphrase recall becomes weaker, but exact keywords, function names, and error codes remain searchable.
 
 ---
 
-## Current QwenPaw Integration
+## Current NousAIPaw Integration
 
 ReMeLight is currently the only direct consumer of this embedding configuration. It embeds Markdown text under
 `memory/` and `digest/` to add a semantic signal to `memory_search` and digest-node similarity queries; BM25 continues
@@ -278,7 +278,7 @@ including the score, vector, and keyword fields, without summarizing or rewritin
 - `vector`: raw cosine similarity; a number means a vector hit and `-` means no vector hit.
 - `keyword`: raw BM25 score; a number means a keyword hit and `-` means no keyword hit.
 
-If testing fails, check the enable condition, network reachability from the QwenPaw process, model name, exact dimensions,
+If testing fails, check the enable condition, network reachability from the NousAIPaw process, model name, exact dimensions,
 support for the `dimensions` parameter, input and batch limits, and provider quota or rate limits.
 
 ---

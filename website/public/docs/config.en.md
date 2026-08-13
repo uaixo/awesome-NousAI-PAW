@@ -490,9 +490,9 @@ When the enable condition is not met, ReMe still keeps keyword indexes and wikil
 
 These settings can also be changed in the Console under **Agent → Runtime Config**. Fields read on demand, such as
 auto-memory cadence and auto-search limits, apply to later turns after saving. An Embedding save is
-transactional: QwenPaw persists the submitted running config, then tries to apply it to the live ReMe runtime. If the
+transactional: NousAIPaw persists the submitted running config, then tries to apply it to the live ReMe runtime. If the
 current service fingerprint was successfully tested, the running embedding model can be replaced in place; otherwise
-QwenPaw recreates the embedded ReMe application. If neither path succeeds, it rolls back the submitted fields when it
+NousAIPaw recreates the embedded ReMe application. If neither path succeeds, it rolls back the submitted fields when it
 can do so without overwriting a concurrent edit and reports an error. Saving always schedules the normal Agent reload,
 so no manual restart is required. An Embedding change is rejected with HTTP `409` while an index rebuild is active.
 

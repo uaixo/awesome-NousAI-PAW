@@ -2,9 +2,9 @@
 
 NousAIPaw's long-term memory is powered by [ReMe](https://github.com/agentscope-ai/ReMe). Instead of putting the entire conversation history back into context, it continuously turns conversations and Daily Paper readings into **readable, editable, searchable, and interconnected Markdown memories**. Over time, those files become a self-evolving personal knowledge base maintained jointly by the user and the Agent.
 
-The default `remelight` backend embeds ReMe in the QwenPaw process and reuses the current Agent's model for memory extraction and consolidation. The system follows a capture, consolidation, retrieval, and discovery loop:
+The default `remelight` backend embeds ReMe in the NousAIPaw process and reuses the current Agent's model for memory extraction and consolidation. The system follows a capture, consolidation, retrieval, and discovery loop:
 
-![QwenPaw long-term memory architecture from capture to retrieval and discovery](https://img.alicdn.com/imgextra/i3/O1CN01mG5Uot1GQdX33v4h4_!!6000000000617-55-tps-1200-640.svg)
+![NousAIPaw long-term memory architecture from capture to retrieval and discovery](https://img.alicdn.com/imgextra/i3/O1CN01mG5Uot1GQdX33v4h4_!!6000000000617-55-tps-1200-640.svg)
 
 Conversations and external resources first become traceable daily memory, which Auto-Dream consolidates into `digest/`. Indexing and search retrieve only the relevant passages instead of reloading the entire history.
 
@@ -22,7 +22,7 @@ Auto-Memory is the prerequisite for building the knowledge base: it first turns 
 
 The Console brings these capabilities together on the long-term memory page:
 
-![QwenPaw long-term memory Console overview](https://img.alicdn.com/imgextra/i2/O1CN019aX2sCLIZvB6wGdo_!!6000000005818-0-tps-3418-1594.jpg)
+![NousAIPaw long-term memory Console overview](https://img.alicdn.com/imgextra/i2/O1CN019aX2sCLIZvB6wGdo_!!6000000005818-0-tps-3418-1594.jpg)
 
 Memory capture, scheduled organization, Daily Paper, search, and maintenance status are shown in one place; the sections below explain how each area behaves at runtime.
 
@@ -69,14 +69,14 @@ By default, each Agent workspace is located at `~/.qwenpaw/workspaces/{agent_id}
 
 The four user-visible directories have distinct responsibilities:
 
-| Directory                    | Content                                                                      | Directly indexed by QwenPaw memory search |
-| ---------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------- |
-| `memory/YYYY-MM-DD/*.md`     | Daily facts, conversation summaries, decisions, progress, and paper readings | Yes                                       |
-| `mem_session/dialog/*.jsonl` | Sanitized source conversations for traceability and later extraction         | No                                        |
-| `digest/`                    | The long-term personal knowledge base consolidated by Auto-Dream             | Yes                                       |
-| `resource/`                  | Raw assets produced by Daily Paper and future knowledge workflows            | No                                        |
+| Directory                    | Content                                                                      | Directly indexed by NousAIPaw memory search |
+| ---------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------- |
+| `memory/YYYY-MM-DD/*.md`     | Daily facts, conversation summaries, decisions, progress, and paper readings | Yes                                         |
+| `mem_session/dialog/*.jsonl` | Sanitized source conversations for traceability and later extraction         | No                                          |
+| `digest/`                    | The long-term personal knowledge base consolidated by Auto-Dream             | Yes                                         |
+| `resource/`                  | Raw assets produced by Daily Paper and future knowledge workflows            | No                                          |
 
-> QwenPaw's embedded ReMe indexes only `.md` files under `memory/` and `digest/`. Raw conversations are queried by the context system. Daily Paper writes searchable Markdown readings under `memory/`; arbitrary files under `resource/` are not watched.
+> NousAIPaw's embedded ReMe indexes only `.md` files under `memory/` and `digest/`. Raw conversations are queried by the context system. Daily Paper writes searchable Markdown readings under `memory/`; arbitrary files under `resource/` are not watched.
 
 ### Markdown, Frontmatter, and Wikilinks
 
@@ -124,7 +124,7 @@ flowchart LR
     F --> G[Refresh day index and incrementally update search]
 ```
 
-By default, QwenPaw triggers Auto-Memory after every five user turns. Before calling ReMe, QwenPaw converts the exact
+By default, NousAIPaw triggers Auto-Memory after every five user turns. Before calling ReMe, NousAIPaw converts the exact
 session ID bytes to `qpsid_sha256_<64-hex>` so the filename is fixed-length and remains distinct across
 case-insensitive and Unicode-normalizing filesystems. ReMe saves the source conversation under that identifier, then
 looks for an existing note for the hashed session and date. It updates the existing card when one exists and creates at
@@ -161,7 +161,7 @@ A smaller interval updates memory sooner, but increases model calls, token usage
 
 ### Inbox
 
-When `auto_memory_inbox_push_enabled` is on, Auto-Memory results appear in QwenPaw's Inbox. If the run finds nothing worth creating or updating, ReMe reports `modified=false` and QwenPaw does not create an Inbox event for that no-op.
+When `auto_memory_inbox_push_enabled` is on, Auto-Memory results appear in NousAIPaw's Inbox. If the run finds nothing worth creating or updating, ReMe reports `modified=false` and NousAIPaw does not create an Inbox event for that no-op.
 
 When a run makes a real change, Inbox shows its status, updated files, and extracted result so the user can quickly see what Auto-Memory did:
 
@@ -171,7 +171,7 @@ Inbox is only the notification surface. The reusable, editable memory remains th
 
 ### Example
 
-Suppose the user says in a QwenPaw session:
+Suppose the user says in a NousAIPaw session:
 
 ```text
 For every production release, validate staging first. Write the release notes in Chinese and include risks and rollback steps.
@@ -313,7 +313,7 @@ The background `index_update_loop` keeps files searchable, while `memory_search`
 
 ### Index Capabilities and Scope
 
-After QwenPaw starts embedded ReMe, the background `index_update_loop`:
+After NousAIPaw starts embedded ReMe, the background `index_update_loop`:
 
 - scans `daily_dir` (default `memory`) and `digest_dir` (default `digest`) at startup;
 - watches new, modified, and deleted `.md` files in those directories while running;
@@ -381,7 +381,7 @@ The Agent can call `memory_search` whenever an answer depends on past informatio
 }
 ```
 
-When enabled, QwenPaw builds a query from the current user request and runs the same ReMe `search` job before the model handles it. The results are injected into the live context as a completed `memory_search` interaction and remain available to subsequent model calls in that turn. Automation-originated requests do not trigger this behavior. Injected results are also excluded from persistent conversation history and Auto-Memory, preventing memory from copying itself.
+When enabled, NousAIPaw builds a query from the current user request and runs the same ReMe `search` job before the model handles it. The results are injected into the live context as a completed `memory_search` interaction and remain available to subsequent model calls in that turn. Automation-originated requests do not trigger this behavior. Injected results are also excluded from persistent conversation history and Auto-Memory, preventing memory from copying itself.
 
 | Field         | Default | Description                                               |
 | ------------- | ------- | --------------------------------------------------------- |

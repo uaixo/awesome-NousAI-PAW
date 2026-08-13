@@ -8,14 +8,14 @@ NousAIPaw does not treat memory as a growing transcript. Recent events remain as
 
 The memory system first preserves conversations and resources as evidence, consolidates reusable knowledge into durable nodes, and then lets retrieval or proactive discovery influence later behavior:
 
-![QwenPaw long-term memory from capture and consolidation to retrieval and discovery](https://img.alicdn.com/imgextra/i3/O1CN01mG5Uot1GQdX33v4h4_!!6000000000617-55-tps-1200-640.svg)
+![NousAIPaw long-term memory from capture and consolidation to retrieval and discovery](https://img.alicdn.com/imgextra/i3/O1CN01mG5Uot1GQdX33v4h4_!!6000000000617-55-tps-1200-640.svg)
 
 There are two important loops:
 
 - The **evolution loop** runs from daily evidence to durable `digest/` knowledge and then back into later conversations through retrieval.
 - The **proactive loop** watches for an appropriate moment, infers what may help next, does preparatory work, and starts a new interaction.
 
-These loops are related conceptually but are not fully connected in the current implementation. In particular, QwenPaw's `/proactive` command reads recent sessions and optional screen context; it does **not** currently read Auto-Dream's `interests.yaml` or `digest/` directly.
+These loops are related conceptually but are not fully connected in the current implementation. In particular, NousAIPaw's `/proactive` command reads recent sessions and optional screen context; it does **not** currently read Auto-Dream's `interests.yaml` or `digest/` directly.
 
 ## What “Self-Evolving” Means
 
@@ -145,9 +145,9 @@ After Auto-Dream finishes, Inbox can present the scan range, integration results
 
 The notification makes the current run easy to review; the topic source and durable nodes remain in `interests.yaml` and `digest/`, respectively.
 
-## Proactive Interaction in QwenPaw
+## Proactive Interaction in NousAIPaw
 
-QwenPaw's user-facing proactive mode is an in-memory monitor keyed by the active Agent name:
+NousAIPaw's user-facing proactive mode is an in-memory monitor keyed by the active Agent name:
 
 ```text
 /proactive           # enable; trigger after 30 minutes of inactivity

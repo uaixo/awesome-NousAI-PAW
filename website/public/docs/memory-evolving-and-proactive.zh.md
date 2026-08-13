@@ -8,14 +8,14 @@ NousAIPaw 不把记忆当成不断增长的聊天记录。近期事件作为证�
 
 记忆系统先把对话与资源保存为证据，再把其中可复用的知识沉淀到长期节点，最后通过搜索或主动发现影响后续行为：
 
-![QwenPaw 长期记忆从捕获、整理到检索与发现的全景](https://img.alicdn.com/imgextra/i3/O1CN01mG5Uot1GQdX33v4h4_!!6000000000617-55-tps-1200-640.svg)
+![NousAIPaw 长期记忆从捕获、整理到检索与发现的全景](https://img.alicdn.com/imgextra/i3/O1CN01mG5Uot1GQdX33v4h4_!!6000000000617-55-tps-1200-640.svg)
 
 其中有两个关键闭环：
 
 - **进化闭环**从每日证据流向稳定的 `digest/` 知识，再通过检索回到后续对话。
 - **主动闭环**等待合适的时机，推断接下来可能有帮助的事项，提前完成准备工作，并发起新交互。
 
-两者在理念上相关，但当前实现尚未完全打通。尤其要注意：QwenPaw 的 `/proactive` 命令读取近期 session 和可选屏幕上下文；它目前**不会**直接读取 Auto-Dream 生成的 `interests.yaml` 或 `digest/`。
+两者在理念上相关，但当前实现尚未完全打通。尤其要注意：NousAIPaw 的 `/proactive` 命令读取近期 session 和可选屏幕上下文；它目前**不会**直接读取 Auto-Dream 生成的 `interests.yaml` 或 `digest/`。
 
 ## “自进化”究竟是什么
 
@@ -145,7 +145,7 @@ Auto-Dream 完成后，扫描范围、整合结果和兴趣主题会以摘要形
 
 这类通知帮助用户快速了解本轮变化；主题原文和长期节点仍分别保存在 `interests.yaml` 与 `digest/` 中。
 
-## QwenPaw 的主动交互
+## NousAIPaw 的主动交互
 
 面向用户的主动模式是在内存中按当前 Agent 名称保存的监控任务：
 

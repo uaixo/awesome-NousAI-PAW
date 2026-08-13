@@ -2,9 +2,9 @@
 
 NousAIPaw 的长期记忆由 [ReMe](https://github.com/agentscope-ai/ReMe) 驱动。它不是把历史对话全部塞回上下文，而是让对话与 Daily Paper 精读持续沉淀为**可读、可编辑、可检索、相互链接的 Markdown 记忆**，逐步长成一个由用户和 Agent 共同维护的自进化个人知识库。
 
-默认的 `remelight` 后端会在 QwenPaw 进程内嵌入 ReMe，并复用当前 Agent 的模型完成记忆抽取和整理。整个系统沿着“捕获、沉淀、检索、发现”的闭环运行：
+默认的 `remelight` 后端会在 NousAIPaw 进程内嵌入 ReMe，并复用当前 Agent 的模型完成记忆抽取和整理。整个系统沿着“捕获、沉淀、检索、发现”的闭环运行：
 
-![QwenPaw 长期记忆从捕获到检索与发现的整体架构](https://img.alicdn.com/imgextra/i3/O1CN01mG5Uot1GQdX33v4h4_!!6000000000617-55-tps-1200-640.svg)
+![NousAIPaw 长期记忆从捕获到检索与发现的整体架构](https://img.alicdn.com/imgextra/i3/O1CN01mG5Uot1GQdX33v4h4_!!6000000000617-55-tps-1200-640.svg)
 
 对话和外部资源先成为可追溯的每日记忆，再由 Auto-Dream 整合进 `digest/`；索引与搜索只按需取回相关片段，而不是重新装载全部历史。
 
@@ -22,7 +22,7 @@ NousAIPaw 的长期记忆由 [ReMe](https://github.com/agentscope-ai/ReMe) 驱�
 
 这些能力都可以在控制台的长期记忆页面中统一查看和配置：
 
-![QwenPaw 长期记忆控制台总览](https://img.alicdn.com/imgextra/i2/O1CN019aX2sCLIZvB6wGdo_!!6000000005818-0-tps-3418-1594.jpg)
+![NousAIPaw 长期记忆控制台总览](https://img.alicdn.com/imgextra/i2/O1CN019aX2sCLIZvB6wGdo_!!6000000005818-0-tps-3418-1594.jpg)
 
 页面把记忆捕获、定时整理、Daily Paper、搜索与维护状态集中展示；后文会分别说明每个区域对应的运行机制。
 
@@ -69,14 +69,14 @@ ReMe 遵循 **Memory as File, File as Memory**：
 
 四类用户可见目录各自承担不同职责：
 
-| 目录                         | 内容                                       | 是否直接参与 QwenPaw 记忆检索 |
-| ---------------------------- | ------------------------------------------ | ----------------------------- |
-| `memory/YYYY-MM-DD/*.md`     | 当天事实、对话摘要、决策、进度和论文精读   | 是                            |
-| `mem_session/dialog/*.jsonl` | 经过清理的来源对话，用于追溯和后续抽取     | 否                            |
-| `digest/`                    | Auto-Dream 整合后的长期个人知识库          | 是                            |
-| `resource/`                  | Daily Paper 和未来知识工作流产生的原始资源 | 不直接检索                    |
+| 目录                         | 内容                                       | 是否直接参与 NousAIPaw 记忆检索 |
+| ---------------------------- | ------------------------------------------ | ------------------------------- |
+| `memory/YYYY-MM-DD/*.md`     | 当天事实、对话摘要、决策、进度和论文精读   | 是                              |
+| `mem_session/dialog/*.jsonl` | 经过清理的来源对话，用于追溯和后续抽取     | 否                              |
+| `digest/`                    | Auto-Dream 整合后的长期个人知识库          | 是                              |
+| `resource/`                  | Daily Paper 和未来知识工作流产生的原始资源 | 不直接检索                      |
 
-> QwenPaw 的嵌入式 ReMe 只索引 `memory/` 和 `digest/` 下的 `.md` 文件。原始对话由上下文系统负责查询；Daily Paper 会把可检索的 Markdown 精读写入 `memory/`，而 `resource/` 下的任意文件不会被监听。
+> NousAIPaw 的嵌入式 ReMe 只索引 `memory/` 和 `digest/` 下的 `.md` 文件。原始对话由上下文系统负责查询；Daily Paper 会把可检索的 Markdown 精读写入 `memory/`，而 `resource/` 下的任意文件不会被监听。
 
 ### Markdown、Frontmatter 与 Wikilink
 
@@ -124,7 +124,7 @@ flowchart LR
     F --> G[刷新 date 索引并增量更新搜索索引]
 ```
 
-QwenPaw 默认每累计 5 个用户回合触发一次。调用 ReMe 前，QwenPaw 会把 session ID 的原始 UTF-8
+NousAIPaw 默认每累计 5 个用户回合触发一次。调用 ReMe 前，NousAIPaw 会把 session ID 的原始 UTF-8
 字节转换为 `qpsid_sha256_<64-hex>`，使文件名长度固定，并避免大小写不敏感或 Unicode 规范化文件系统上的冲突。
 ReMe 按这个哈希标识保存来源对话，再查找当天属于该哈希会话的已有记忆卡片；已有则更新，否则最多创建一条新卡片。
 自动搜索注入的旧记忆会在抽取前移除，避免把“召回内容”误写成用户刚刚提供的新事实。
@@ -159,7 +159,7 @@ ReMe 按这个哈希标识保存来源对话，再查找当天属于该哈希会
 
 ### Inbox
 
-开启 `auto_memory_inbox_push_enabled` 后，Auto-Memory 的执行结果会进入 QwenPaw Inbox。若本次判断没有值得新增或更新的内容，ReMe 会标记 `modified=false`，QwenPaw 不会为这次空变更生成 Inbox 事件。
+开启 `auto_memory_inbox_push_enabled` 后，Auto-Memory 的执行结果会进入 NousAIPaw Inbox。若本次判断没有值得新增或更新的内容，ReMe 会标记 `modified=false`，NousAIPaw 不会为这次空变更生成 Inbox 事件。
 
 发生实际变更时，Inbox 会给出处理状态、更新文件和提取结果，方便快速确认这次自动记忆做了什么：
 
@@ -169,7 +169,7 @@ Inbox 只是通知入口；可继续复用和编辑的记忆仍以工作区中�
 
 ### 示例
 
-假设用户在一个 QwenPaw 会话中说：
+假设用户在一个 NousAIPaw 会话中说：
 
 ```text
 以后所有生产发布都先跑 staging 验证；发布说明用中文，列出风险和回滚步骤。
@@ -202,7 +202,7 @@ source_conversation: "[[mem_session/dialog/qpsid_sha256_<64-hex>.jsonl]]"
 Daily Paper 会收集 Hugging Face 周榜和月榜，排除昨日榜单以及过去 30 天每日笔记 frontmatter 中已经出现的
 arXiv ID，再用加权 RRF 生成最多 20 篇候选池。Memory Agent 必须从候选池中选择三篇互不重复的论文。
 ReMe 下载 PDF，每篇最多分析 20 页和 300,000 字符（文件最大 50 MiB），最终生成三篇详细精读和一份每日简报。
-PDF 保存到 `resource/papers/`，Markdown 写入 `memory/YYYY-MM-DD/`，进入正常记忆索引，并可通过 QwenPaw Inbox 推送结果。
+PDF 保存到 `resource/papers/`，Markdown 写入 `memory/YYYY-MM-DD/`，进入正常记忆索引，并可通过 NousAIPaw Inbox 推送结果。
 
 控制台可以配置 Daily Paper 的调度、主题和镜像来源，并决定任务结束后是否发送通知：
 
@@ -223,7 +223,7 @@ Auto-Dream 是从每日记忆到长期知识的整合流程。它默认每天定
 
 ### 工作原理
 
-QwenPaw 的 Auto-Dream 默认扫描目标日期及其前一天（`scan_days=2`），最多抽取 5 个 memory unit，分四个阶段执行：
+NousAIPaw 的 Auto-Dream 默认扫描目标日期及其前一天（`scan_days=2`），最多抽取 5 个 memory unit，分四个阶段执行：
 
 ```mermaid
 flowchart LR
@@ -308,7 +308,7 @@ Auto-Link 不是独立的定时任务，而是 Auto-Dream 的 **Integrate** 阶�
 
 ### 索引能力与范围
 
-QwenPaw 启动嵌入式 ReMe 后，后台 `index_update_loop` 会：
+NousAIPaw 启动嵌入式 ReMe 后，后台 `index_update_loop` 会：
 
 - 启动时扫描 `daily_dir`（默认 `memory`）和 `digest_dir`（默认 `digest`）；
 - 运行期间监听这两个目录下新增、修改和删除的 `.md` 文件；
@@ -376,7 +376,7 @@ Agent 可以在判断需要历史信息时主动调用 `memory_search`。如果�
 }
 ```
 
-启用后，QwenPaw 会在模型处理当前用户请求前，用这条请求构造查询并执行同一个 ReMe `search` job。结果以一组已完成的 `memory_search` 工具交互注入当前 live context，供本轮后续模型调用使用。自动化来源的请求不会触发；注入结果也不会被写回会话历史或 Auto-Memory，避免记忆自我复制。
+启用后，NousAIPaw 会在模型处理当前用户请求前，用这条请求构造查询并执行同一个 ReMe `search` job。结果以一组已完成的 `memory_search` 工具交互注入当前 live context，供本轮后续模型调用使用。自动化来源的请求不会触发；注入结果也不会被写回会话历史或 Auto-Memory，避免记忆自我复制。
 
 | 配置项        | 默认值  | 说明                               |
 | ------------- | ------- | ---------------------------------- |
