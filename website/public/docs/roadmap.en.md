@@ -19,8 +19,8 @@
 | **Voice Interaction**           | Real-time voice tasks                       | In Progress          |
 | **Context Management & Memory** | Hot-swappable vector models and storage     | In Progress          |
 |                                 | Personal knowledge base                     | In Progress          |
-| **NousAIPaw Applications**        | NousAIPaw Insight                             | In Progress          |
-|                                 | NousAIPaw Mail                                | In Progress          |
+| **NousAIPaw Applications**      | NousAIPaw Insight                           | In Progress          |
+|                                 | NousAIPaw Mail                              | In Progress          |
 
 _Status:_ _In Progress_ — actively being worked on; _Seeking Contributors_ — we strongly encourage community contributions.
 

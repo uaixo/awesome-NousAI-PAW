@@ -62,12 +62,12 @@ graph LR
     U --> W[memory/<date>/interests.yaml]
 ```
 
-| 能力                 | 代码路径                                                     | 触发方式                                                                | 主要产物                                                                               |
-| -------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------ |
-| Auto Memory          | `ReMeLightMemoryManager.auto_memory()` -> ReMe `auto_memory` | `MemoryMiddleware` 按配置的用户轮次数触发；启用时也会在上下文压缩前触发 | `mem_session/dialog/<session_id>.jsonl`、`memory/<date>/<note>.md`、`memory/<date>.md` |
-| Daily Paper          | `ReMeLightMemoryManager.daily_paper()` -> ReMe `daily_paper` | `daily_paper_cron_enabled` 启用后由 `daily_paper_cron` 调度             | `resource/papers/*.pdf`、论文精读和每日简报                                            |
-| Auto Dream           | `ReMeLightMemoryManager.dream()` -> ReMe `auto_dream`        | `/dream` 命令或 `dream_cron` 调度                                       | `digest/*/*.md`、`memory/<date>/interests.yaml`                                        |
-| ReMe proactive job   | ReMe `proactive`                                             | 仅在直接调用 ReMe job 时运行                                            | `memory/<date>/interests.yaml` 的 metadata/content                                     |
+| 能力                   | 代码路径                                                     | 触发方式                                                                | 主要产物                                                                               |
+| ---------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------ |
+| Auto Memory            | `ReMeLightMemoryManager.auto_memory()` -> ReMe `auto_memory` | `MemoryMiddleware` 按配置的用户轮次数触发；启用时也会在上下文压缩前触发 | `mem_session/dialog/<session_id>.jsonl`、`memory/<date>/<note>.md`、`memory/<date>.md` |
+| Daily Paper            | `ReMeLightMemoryManager.daily_paper()` -> ReMe `daily_paper` | `daily_paper_cron_enabled` 启用后由 `daily_paper_cron` 调度             | `resource/papers/*.pdf`、论文精读和每日简报                                            |
+| Auto Dream             | `ReMeLightMemoryManager.dream()` -> ReMe `auto_dream`        | `/dream` 命令或 `dream_cron` 调度                                       | `digest/*/*.md`、`memory/<date>/interests.yaml`                                        |
+| ReMe proactive job     | ReMe `proactive`                                             | 仅在直接调用 ReMe job 时运行                                            | `memory/<date>/interests.yaml` 的 metadata/content                                     |
 | NousAIPaw `/proactive` | `src/qwenpaw/agents/memory/proactive`                        | `/proactive [minutes                                                    | on                                                                                     | off]` 空闲循环 | 通过 `/api/console/chat` 发送的主动 chat request |
 
 关键边界：`memory/<date>/interests.yaml` 由 Auto Dream 生成，也可以被 ReMe 的 `proactive` job 读取；但 NousAIPaw 当前 `/proactive` 实现不会调用这个 job，也不会直接消费 `interests.yaml`。
@@ -146,7 +146,7 @@ NousAIPaw 通过 `ReMeLightMemoryManager.daily_paper()` 调用 ReMe `daily_paper
 收集候选论文，排除近期已经推荐的 arXiv ID，选择三篇论文，下载 PDF 并生成三篇精读和一份每日简报。
 
 PDF 保存在 `resource_dir/papers/`，Markdown 保存在 `daily_dir/<date>/` 并进入现有记忆索引。执行结果通过
-QwenPaw inbox 推送，不包含 DingTalk step。
+NousAIPaw inbox 推送，不包含 DingTalk step。
 
 `daily_paper_cron_enabled` 默认是 `false`；启用后按 `daily_paper_cron` 调度，默认表达式为 `0 9 * * *`。
 

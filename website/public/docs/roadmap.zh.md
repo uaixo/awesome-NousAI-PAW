@@ -19,8 +19,8 @@
 | **语音交互**           | 实时语音任务                  | 进行中 |
 | **上下文管理与记忆**   | 向量模型与存储热切换          | 进行中 |
 |                        | 个人知识库                    | 进行中 |
-| **NousAIPaw 应用**       | NousAIPaw Insight               | 进行中 |
-|                        | NousAIPaw Mail                  | 进行中 |
+| **NousAIPaw 应用**     | NousAIPaw Insight             | 进行中 |
+|                        | NousAIPaw Mail                | 进行中 |
 
 _状态说明：**进行中** — 正在积极开发；**征集中** — 我们强烈鼓励社区参与。_
 

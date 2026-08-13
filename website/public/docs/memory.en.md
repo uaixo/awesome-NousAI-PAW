@@ -44,13 +44,13 @@ Long-term memory management includes the following capabilities:
 
 | Capability             | Description                                                                                                  |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------ |
-| **Embedded ReMe app**  | NousAIPaw starts ReMe in-process and injects the active NousAIPaw model into ReMe's default LLM component        |
+| **Embedded ReMe app**  | NousAIPaw starts ReMe in-process and injects the active NousAIPaw model into ReMe's default LLM component    |
 | **Auto-Memory**        | After a configurable number of user turns, ReMe extracts useful conversation facts into daily Markdown notes |
 | **Context compaction** | Before context compression, pending turns can be flushed into the same `auto_memory` pipeline                |
 | **Auto-Dream**         | A cron job extracts higher-level digest units and proactive-interest topics from recent daily notes          |
 | **Hybrid Search**      | `memory_search` calls ReMe's `search` job, using BM25 plus optional vector search and reciprocal-rank fusion |
 | **Daily Paper**        | Scheduled paper readings and a daily brief; PDFs go to `resource/papers/` and Markdown goes to daily memory  |
-| **Inbox Results**      | `auto_memory`, `auto_dream`, and `daily_paper` results are pushed to NousAIPaw's inbox                         |
+| **Inbox Results**      | `auto_memory`, `auto_dream`, and `daily_paper` results are pushed to NousAIPaw's inbox                       |
 
 ---
 
@@ -137,7 +137,7 @@ user-interest topics for proactive use.
 `resource/` remains the raw-asset directory for proactive knowledge workflows; arbitrary files are no longer watched.
 Daily Paper selects papers from Hugging Face weekly/monthly rankings, stores arXiv PDFs under
 `resource/papers/<arxiv_id>.pdf`, and writes three detailed readings plus one brief under `memory/YYYY-MM-DD/`.
-The Markdown output enters the existing memory index and the job result is delivered to QwenPaw's inbox.
+The Markdown output enters the existing memory index and the job result is delivered to NousAIPaw's inbox.
 
 Daily Paper is disabled by default. When `daily_paper_cron_enabled` is on, `daily_paper_cron` controls its schedule.
 
@@ -352,9 +352,9 @@ Memory configuration is located in `agent.json` under `running.reme_light_memory
 | `resource_dir`                   | Raw resource directory used by Daily Paper and future knowledge workflows                                                       | `"resource"`     |
 | `daily_dir`                      | Directory for daily memory notes                                                                                                | `"memory"`       |
 | `digest_dir`                     | Directory for dream/digest memory                                                                                               | `"digest"`       |
-| `auto_memory_inbox_push_enabled` | Whether `auto_memory` results are pushed to the NousAIPaw inbox                                                                   | `true`           |
-| `auto_dream_inbox_push_enabled`  | Whether `auto_dream` results are pushed to the NousAIPaw inbox                                                                    | `true`           |
-| `daily_paper_inbox_push_enabled` | Whether `daily_paper` results are pushed to the NousAIPaw inbox                                                                   | `true`           |
+| `auto_memory_inbox_push_enabled` | Whether `auto_memory` results are pushed to the NousAIPaw inbox                                                                 | `true`           |
+| `auto_dream_inbox_push_enabled`  | Whether `auto_dream` results are pushed to the NousAIPaw inbox                                                                  | `true`           |
+| `daily_paper_inbox_push_enabled` | Whether `daily_paper` results are pushed to the NousAIPaw inbox                                                                 | `true`           |
 | `auto_memory_interval`           | Auto-Memory every N user turns. `None` or `<= 0` disables periodic Auto-Memory                                                  | `5`              |
 | `dream_cron_enabled`             | Whether the scheduled Auto-Dream job is enabled                                                                                 | `true`           |
 | `dream_cron`                     | Valid 5-field cron expression for Auto-Dream (required when enabled); scheduled runs start after a random delay of 0–60 seconds | `"0 23 * * *"`   |

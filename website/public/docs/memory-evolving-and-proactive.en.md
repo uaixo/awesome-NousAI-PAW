@@ -62,12 +62,12 @@ graph LR
     U --> W[memory/<date>/interests.yaml]
 ```
 
-| Capability           | Code path                                                    | Trigger                                                                                                     | Main output                                                                            |
-| -------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------- | --------------------------------------------------------- |
-| Auto Memory          | `ReMeLightMemoryManager.auto_memory()` -> ReMe `auto_memory` | `MemoryMiddleware` after every configured number of user turns, and before context compression when enabled | `mem_session/dialog/<session_id>.jsonl`, `memory/<date>/<note>.md`, `memory/<date>.md` |
-| Daily Paper          | `ReMeLightMemoryManager.daily_paper()` -> ReMe `daily_paper` | `daily_paper_cron` scheduler when `daily_paper_cron_enabled` is on                                          | `resource/papers/*.pdf`, detailed readings, and a daily brief                          |
-| Auto Dream           | `ReMeLightMemoryManager.dream()` -> ReMe `auto_dream`        | `/dream` command or `dream_cron` scheduler                                                                  | `digest/*/*.md`, `memory/<date>/interests.yaml`                                        |
-| ReMe proactive job   | ReMe `proactive`                                             | Direct ReMe job call only                                                                                   | Metadata/content from `memory/<date>/interests.yaml`                                   |
+| Capability             | Code path                                                    | Trigger                                                                                                     | Main output                                                                            |
+| ---------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------- | --------------------------------------------------------- |
+| Auto Memory            | `ReMeLightMemoryManager.auto_memory()` -> ReMe `auto_memory` | `MemoryMiddleware` after every configured number of user turns, and before context compression when enabled | `mem_session/dialog/<session_id>.jsonl`, `memory/<date>/<note>.md`, `memory/<date>.md` |
+| Daily Paper            | `ReMeLightMemoryManager.daily_paper()` -> ReMe `daily_paper` | `daily_paper_cron` scheduler when `daily_paper_cron_enabled` is on                                          | `resource/papers/*.pdf`, detailed readings, and a daily brief                          |
+| Auto Dream             | `ReMeLightMemoryManager.dream()` -> ReMe `auto_dream`        | `/dream` command or `dream_cron` scheduler                                                                  | `digest/*/*.md`, `memory/<date>/interests.yaml`                                        |
+| ReMe proactive job     | ReMe `proactive`                                             | Direct ReMe job call only                                                                                   | Metadata/content from `memory/<date>/interests.yaml`                                   |
 | NousAIPaw `/proactive` | `src/qwenpaw/agents/memory/proactive`                        | `/proactive [minutes                                                                                        | on                                                                                     | off]` idle loop | A proactive chat request sent through `/api/console/chat` |
 
 The important boundary is that `memory/<date>/interests.yaml` is produced by Auto Dream and can be read by ReMe's `proactive` job, but NousAIPaw's current `/proactive` implementation does not call that job.
@@ -147,7 +147,7 @@ Hugging Face weekly and monthly rankings, excludes recently recommended arXiv ID
 their PDFs, and produces three detailed readings plus a daily brief.
 
 PDFs are stored under `resource_dir/papers/`; Markdown is stored under `daily_dir/<date>/` and enters the existing
-memory index. Results are delivered through QwenPaw's inbox, with no DingTalk step.
+memory index. Results are delivered through NousAIPaw's inbox, with no DingTalk step.
 
 `daily_paper_cron_enabled` defaults to `false`. When enabled, `daily_paper_cron` controls the schedule and defaults to
 `0 9 * * *`.

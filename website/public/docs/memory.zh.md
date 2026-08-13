@@ -43,15 +43,15 @@ graph TB
 
 长期记忆管理包含以下能力：
 
-| 能力               | 说明                                                                                   |
-| ------------------ | -------------------------------------------------------------------------------------- |
+| 能力               | 说明                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------ |
 | **嵌入式 ReMe**    | NousAIPaw 在进程内启动 ReMe，并将当前 Agent 使用的 NousAIPaw 模型注入到 ReMe 默认 LLM 组件 |
-| **Auto-Memory**    | 每隔可配置数量的用户回合，将对话中值得保留的事实抽取为每日 Markdown 记忆               |
-| **上下文压缩保存** | 上下文压缩前，可把尚未写入的回合先提交给同一套 `auto_memory` 流程                      |
-| **Auto-Dream**     | 定时从近期每日记忆中提取更高层的 digest 单元和主动交互兴趣主题                         |
-| **混合检索**       | `memory_search` 调用 ReMe `search` job，通过 BM25 + 可选向量检索，并使用 RRF 融合排序  |
-| **Daily Paper**    | 可配置定时生成论文精读和每日简报；PDF 保存在 `resource/papers/`，Markdown 写入每日记忆 |
-| **Inbox 通知**     | `auto_memory`、`auto_dream`、`daily_paper` 产生结果时，会推送到 NousAIPaw inbox          |
+| **Auto-Memory**    | 每隔可配置数量的用户回合，将对话中值得保留的事实抽取为每日 Markdown 记忆                   |
+| **上下文压缩保存** | 上下文压缩前，可把尚未写入的回合先提交给同一套 `auto_memory` 流程                          |
+| **Auto-Dream**     | 定时从近期每日记忆中提取更高层的 digest 单元和主动交互兴趣主题                             |
+| **混合检索**       | `memory_search` 调用 ReMe `search` job，通过 BM25 + 可选向量检索，并使用 RRF 融合排序      |
+| **Daily Paper**    | 可配置定时生成论文精读和每日简报；PDF 保存在 `resource/papers/`，Markdown 写入每日记忆     |
+| **Inbox 通知**     | `auto_memory`、`auto_dream`、`daily_paper` 产生结果时，会推送到 NousAIPaw inbox            |
 
 ---
 
@@ -133,7 +133,7 @@ note，而不是无限创建重复文件。
 
 `resource/` 保留为主动知识能力的原始资源目录，不再监听任意文件。当前 Daily Paper 会从 Hugging Face
 周榜/月榜筛选论文，将 arXiv PDF 保存到 `resource/papers/<arxiv_id>.pdf`，再把三篇论文精读和一份每日简报写入
-`memory/YYYY-MM-DD/`。简报及详细笔记会进入现有记忆索引，执行结果推送到 QwenPaw inbox。
+`memory/YYYY-MM-DD/`。简报及详细笔记会进入现有记忆索引，执行结果推送到 NousAIPaw inbox。
 
 Daily Paper 默认关闭。启用 `daily_paper_cron_enabled` 后按 `daily_paper_cron` 调度。
 
@@ -299,9 +299,9 @@ score、vector、keyword 字段，不要总结或改写。
 | `resource_dir`                   | Daily Paper 等能力保存原始资源的目录                                             | `"resource"`     |
 | `daily_dir`                      | 每日记忆目录                                                                     | `"memory"`       |
 | `digest_dir`                     | dream/digest 记忆目录                                                            | `"digest"`       |
-| `auto_memory_inbox_push_enabled` | 是否将 `auto_memory` 结果推送到 NousAIPaw inbox                                    | `true`           |
-| `auto_dream_inbox_push_enabled`  | 是否将 `auto_dream` 结果推送到 NousAIPaw inbox                                     | `true`           |
-| `daily_paper_inbox_push_enabled` | 是否将 `daily_paper` 结果推送到 NousAIPaw inbox                                    | `true`           |
+| `auto_memory_inbox_push_enabled` | 是否将 `auto_memory` 结果推送到 NousAIPaw inbox                                  | `true`           |
+| `auto_dream_inbox_push_enabled`  | 是否将 `auto_dream` 结果推送到 NousAIPaw inbox                                   | `true`           |
+| `daily_paper_inbox_push_enabled` | 是否将 `daily_paper` 结果推送到 NousAIPaw inbox                                  | `true`           |
 | `auto_memory_interval`           | 每隔 N 个用户回合触发 Auto-Memory。`None` 或 `<= 0` 表示禁用周期自动记忆         | `5`              |
 | `dream_cron_enabled`             | 是否启用按 Cron 定时执行的 Auto-Dream 任务                                       | `true`           |
 | `dream_cron`                     | Auto-Dream 任务的有效 5 段 Cron 表达式（启用时必填）；触发后随机延迟 0–60 秒启动 | `"0 23 * * *"`   |
